@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np
+
+# Load the dataset
+url = ' https://www.kaggle.com/datasets/dgomonov/new-york-city-airbnb-open-data'
+data = pd.read_csv(url)
+
+# Data Integrity: Check for inconsistencies
+print("Data Shape:", data.shape)
+print("Data Columns:", data.columns)
+print("Data Info:", data.info())
+print("Data Describe:", data.describe())
+
+# Missing Data Handling: Handle missing values
+data.isnull().sum()  # Check for missing values
+data = data.dropna()  # Drop rows with missing values
+# Alternatively, impute missing values with mean or median
+# data.fillna(data.mean(), inplace=True)
+
+# Duplicate Removal: Remove duplicate records
+data.duplicated().sum()  # Check for duplicates
+data.drop_duplicates(inplace=True)  # Remove duplicates
+
+# Standardization: Standardize formatting and units
+data['total_bill'] = data['total_bill'].astype(float)  # Convert to float
+data['tip'] = data['tip'].astype(float)  # Convert to float
+data['size'] = data['size'].astype(int)  # Convert to int
+
+# Outlier Detection: Identify and address outliers
+Q1 = data['total_bill'].quantile(0.25)
+Q3 = data['total_bill'].quantile(0.75)
+IQR = Q3 - Q1
+data = data[~((data['total_bill'] < (Q1 - 1.5 * IQR)) | (data['total_bill'] > (Q3 + 1.5 * IQR)))]  # Remove outliers
+
+# Verify data cleaning
+print("Data Shape after cleaning:", data.shape)
+print("Data Columns after cleaning:", data.columns)
+print("Data Info after cleaning:", data.info())
+print("Data Describe after cleaning:", data.describe())
+
+# Save the cleaned dataset
+data.to_csv('cleaned_data.csv', index=False)
