@@ -1,0 +1,68 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+
+# Data Collection: Load the dataset
+url = 'https://www.kaggle.com/code/analystoleksandra/marketing-analytics-customer-segmentation'  
+data = pd.read_csv(url)
+
+# Data Exploration and Cleaning
+print("Data Shape:", data.shape)
+print("Data Columns:", data.columns)
+print("Data Info:", data.info())
+print("Data Describe:", data.describe())
+
+# Handle missing data if any
+data = data.dropna()  # Dropping rows with missing data
+
+# Descriptive Statistics
+avg_purchase_value = data['total_bill'].mean()
+frequency_of_purchases = data['size'].mean()
+print("Average Purchase Value:", avg_purchase_value)
+print("Frequency of Purchases:", frequency_of_purchases)
+
+# Customer Segmentation: K-Means Clustering
+features = data[['total_bill', 'size']]  # Select features for segmentation
+scaler = StandardScaler()
+features_scaled = scaler.fit_transform(features)
+
+kmeans = KMeans(n_clusters=3)  # Choose the appropriate number of clusters
+features_scaled_kmeans = kmeans.fit_predict(features_scaled)
+data['segment'] = features_scaled_kmeans
+
+# Visualization: Scatter Plot
+plt.figure(figsize=(10, 7))
+sns.scatterplot(x='total_bill', y='size', hue='segment', data=data)
+plt.title("Customer Segments")
+plt.xlabel("Total Bill")
+plt.ylabel("Size")
+plt.show()
+
+# Insights and Recommendations
+segment_analysis = data.groupby('segment').mean()
+print("Segment Analysis:")
+print(segment_analysis)
+
+# Analyze characteristics of each segment
+segment_0 = data[data['segment'] == 0]
+segment_1 = data[data['segment'] == 1]
+segment_2 = data[data['segment'] == 2]
+
+print("Segment 0:")
+print(segment_0.describe())
+
+print("Segment 1:")
+print(segment_1.describe())
+
+print("Segment 2:")
+print(segment_2.describe())
+
+# Provide insights and recommendations
+print("Insights and Recommendations:")
+print("Segment 0: High-value customers with frequent purchases.")
+print("Segment 1: Mid-value customers with moderate purchases.")
+print("Segment 2: Low-value customers with infrequent purchases.")
+print("Recommendations: Targeted marketing strategies for each segment, improve customer satisfaction, and enhance overall business strategies.")
