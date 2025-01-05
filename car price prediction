@@ -1,0 +1,89 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import warnings
+warnings.filterwarnings("ignore")
+df=pd.read_csv('/content/drive/MyDrive/car data.csv',encoding='latin-1')
+df.head()
+  
+df.columns
+df.shape
+df.info()
+  df.describe().style.format(precision=2).background_gradient(cmap='RdBu')
+  df = df.drop_duplicates()
+plt.figure(figsize=(10, 6))
+sns.boxplot(df['Selling_Price'],palette='pastel')
+plt.title('Boxplot of Selling Price')
+plt.show()numerical_columns = ['Year', 'Selling_Price', 'Present_Price', 'Driven_kms', 'Owner']
+numerical_df = df[numerical_columns]
+correlation_matrix = numerical_df.corr()
+# Create a heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt=".2f")
+plt.title('Correlation Heatmap (Numerical Columns)')
+plt.show()numerical_features = ['Year', 'Driven_kms', 'Selling_Price', 'Present_Price']
+for feature in numerical_features:
+    plt.figure(figsize=(10, 6))
+    sns.displot(data=df, x=feature, kde=True)
+    plt.title(f'Distribution of {feature}')
+    plt.show()plt.figure(figsize=(8, 6))
+sns.scatterplot(x='Driven_kms', y='Selling_Price', data=df)
+plt.title('Relationship between Driven_kms and Selling_Price')
+plt.show()
+
+plt.figure(figsize=(8, 6))
+sns.scatterplot(x='Present_Price', y='Selling_Price', data=df)
+plt.title('Relationship between Present_Price and Selling_Price')
+plt.xlabel('Present Price')
+plt.ylabel('Selling Price')
+plt.show()colors = sns.color_palette("Set2")
+categorical_features = ['Fuel_Type', 'Selling_type', 'Transmission', 'Owner']
+# Plot each categorical feature for feature in categorical_features:
+plt.figure(figsize=(10, 6))
+sns.countplot(x=feature, data=df, palette=colors)
+plt.title(f'Frequency of {feature}', fontsize=16, color='darkblue', fontweight='bold')
+plt.xlabel(f'{feature}', fontsize=14, color='navy')
+plt.ylabel('Frequency', fontsize=14, color='navy')
+plt.xticks(fontsize=12, rotation=45)
+plt.yticks(fontsize=12)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.show()
+avg_prices_by_car = df.groupby('Car_Name')['Selling_Price'].mean().sort_values(ascending=False)
+# Plot top N car models by average price
+n = 20  # Number of top car models to plot
+top_car_models = avg_prices_by_car.head(n)
+
+plt.figure(figsize=(10, 6))
+sns.barplot(x=top_car_models.values, y=top_car_models.index,palette='winter')
+plt.title(f'Top {n} Car Models by Average Price')
+plt.xlabel('Average Price')
+plt.ylabel('Car Model')
+plt.tight_layout()
+plt.show()# encoding "Fuel_Type" Column
+df.replace({'Fuel_Type':{'Petrol':0,'Diesel':1,'CNG':2}},inplace=True)
+# encoding "Seller_Type" Column
+df.replace({'Selling_type':{'Dealer':0,'Individual':1}},inplace=True)
+# encoding "Transmission" Column
+df.replace({'Transmission':{'Manual':0,'Automatic':1}},inplace=True)
+X = df.drop(['Car_Name','Selling_Price'],axis=1)
+Y = df['Selling_Price']
+X
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+# Train the linear regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
+# Evaluate the model
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+print('Mean Squared Error:', mse)
+print('R-squared:', r2)# Make predictions
+new_car = [[2022, 20000, 0, 1, 1, 0, 0]]  # Example new car data
+predicted_price = model.predict(new_car)
+print('Predicted Selling Price:', predicted_price[0])
